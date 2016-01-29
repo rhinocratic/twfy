@@ -44,11 +44,13 @@
 
 (defn- invoke-twfy
   "Invokes the \"They Work For You\" API"
-  [fname args]
-  (-> fname
-    (build-uri args)
-    (slurp)
-    (ch/parse-string true)))
+  ([fname]
+    (invoke-twfy fname {}))
+  ([fname args
+    (-> fname
+      (build-uri args)
+      (slurp)
+      (ch/parse-string true))]))
 
 
 ;; ## Main API Functions
@@ -58,31 +60,39 @@
   [url]
   (invoke-twfy "convertURL" {:url url}))
 
-; (defn get-constituency
-;   "Search for a UK Parliament constituency and return details.
-;    Options - at least one of the following must be supplied:
-;
-;    - :name (optional) The name of the constituency
-;    - :postcode (optional) Fetch the constituency for the given postcode"
-;   [& {:as opts}]
-;   (call-api "getConstituency" opts nil))
-;
-; (defn get-constituencies
-;   "Returns a list of UK Parliamentary constituencies.
-;    Options:
-;
-;    - :date (optional) - Fetch the list of constituencies as at this date
-;    - :search (optional) - Fetch the list of constituencies matching this string"
-;   [& {:as opts}]
-;   (call-api "getConstituencies" opts nil))
-;
-; (defn get-person
-;   "Return details for a particular person.
-;   Options:
-;
-;   - :id (required) The id of the person."
-;   [& {:as opts}]
-;   (call-api "getPerson" opts nil))
+(defn constituency-by-postcode
+  "Search for a UK parliamentary constituency by post code."
+  [postcode]
+  (invoke-twfy "getConstituency" {:postcode postcode}))
+
+(defn constituency-by-name
+  "Search for a UK parliamentary constituency by name."
+  [name]
+  (invoke-twfy "getConstituency" {:name name}))
+
+(defn constituencies
+  "Get a list of UK parliamentary constituencies."
+  ([]
+   (constituencies {}))
+  ([terms]
+   (invoke-twfy "getConstituencies" {:search terms})))
+
+(defn constituencies-at-date
+  "Get a list of constituencies as at the given date."
+  [date]
+  (invoke-twfy "getConstituencies" {:date date}))
+
+(defn constituencies-search
+  "Get a list of constituencies matching the given search terms.
+   Possible terms"
+  [terms]
+  (invoke-twfy "getConstituencies" {:search terms}))
+
+(defn person
+  "Get details for the person with the given id."
+  [id]
+  (invoke-twfy "getPerson" {:id id}))
+
 ;
 ; (defn get-mp
 ;   "Return details for a particular MP.
