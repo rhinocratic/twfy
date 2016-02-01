@@ -5,6 +5,9 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [cheshire "5.5.0"]
-                 [environ "1.0.2"]]
+                 [environ "1.0.2"]
+                 [clj-time "0.11.0"]]
   :plugins [[lein-environ "1.0.2"]
+            [com.jakemccrary/lein-test-refresh "0.12.0"]
+            [venantius/ultra "0.4.0"]
             [lein-marginalia "0.7.1"]])

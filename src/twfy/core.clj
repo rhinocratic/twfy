@@ -5,7 +5,8 @@
             [cheshire.core :as ch]
             [clojure.xml :as xml]
             [clojure.zip :as zip]
-            [environ.core :refer [env]]))
+            [environ.core :refer [env]]
+            [clj-time.format :as f]))
 
 (def ^{:private true} api-key
   "The \"They Work For You\" API key"
@@ -45,12 +46,12 @@
 (defn- invoke-twfy
   "Invokes the \"They Work For You\" API"
   ([fname]
-    (invoke-twfy fname {}))
-  ([fname args
-    (-> fname
-      (build-uri args)
-      (slurp)
-      (ch/parse-string true))]))
+   (invoke-twfy fname {}))
+  ([fname args]
+   (-> fname
+    (build-uri args)
+    (slurp)
+    (ch/parse-string true))))
 
 
 ;; ## Main API Functions
@@ -60,33 +61,23 @@
   [url]
   (invoke-twfy "convertURL" {:url url}))
 
-(defn constituency-by-postcode
-  "Search for a UK parliamentary constituency by post code."
-  [postcode]
-  (invoke-twfy "getConstituency" {:postcode postcode}))
-
-(defn constituency-by-name
-  "Search for a UK parliamentary constituency by name."
-  [name]
-  (invoke-twfy "getConstituency" {:name name}))
+(defn constituency
+  "Search for a UK parliamentary constituency.  The search terms should be a map containing at least one of :name, :postcode"
+  [{:keys [name postcode] :as terms}]
+  {:pre [(< 0 (count terms))]}
+  (invoke-twfy "getConstituency" terms))
 
 (defn constituencies
-  "Get a list of UK parliamentary constituencies."
-  ([]
-   (constituencies {}))
-  ([terms]
-   (invoke-twfy "getConstituencies" {:search terms})))
-
-(defn constituencies-at-date
-  "Get a list of constituencies as at the given date."
-  [date]
-  (invoke-twfy "getConstituencies" {:date date}))
-
-(defn constituencies-search
-  "Get a list of constituencies matching the given search terms.
-   Possible terms"
-  [terms]
-  (invoke-twfy "getConstituencies" {:search terms}))
+  "Get a list of UK parliamentary constituencies. The search terms should be a map containing one of :date (a java.util.Date) or :search (a string).
+   If :date is specified, a list of constituencies as at the given date is returned.
+   If :search is specified, a list of constituencies matching the given search term is returned.
+   At present, only one of :date, :search can be given."
+  [{:keys [date search] :as terms}]
+  {:pre [(= 1 (count terms))]}
+  (println terms)
+  (if date
+    (invoke-twfy "getConstituencies" {:date (f/unparse (f/formatters :date) date)})
+    (invoke-twfy "getConstituencies" {:search search})))
 
 (defn person
   "Get details for the person with the given id."
