@@ -46,20 +46,21 @@
  [d]
  (f/unparse (f/formatters :date) (to-joda d)))
 
-(defn- preprocess-args
+(defn- preprocess-terms
   "Preprocess a map of arguments for an API function"
   [args]
   (into {} (map (fn [[k v]]
                   (cond
                     (= k :date) [k (date2string v)]
+                    (= k :id) [k (str v)]
                     :default [k v]))
                 args)))
 
 (defn- invoke-twfy
   "Invokes the \"They Work For You\" API"
-  ([fname args]
+  ([fname terms]
    (-> fname
-    (build-uri (preprocess-args args))
+    (build-uri (preprocess-terms terms))
     (slurp)
     (ch/parse-string true))))
 
@@ -68,13 +69,13 @@
 
 (defn convert-url
   "Converts a parliament.uk Hansard URL into a TheyWorkForYou one, if possible. Accepts a map containing :url (the URL to be converted)"
-  [{:keys [url] :as terms}]
-  {:pre [(some? url)]}
+  [terms]
+  {:pre [(some #{:url} (keys terms))]}
   (invoke-twfy "convertURL" terms))
 
 (defn constituency
   "Search for a UK parliamentary constituency.  The search terms should be a map containing at least one of :name, :postcode"
-  [{:keys [name postcode] :as terms}]
+  [terms]
   {:pre [(some #{:name :postcode} (keys terms))]}
   (invoke-twfy "getConstituency" terms))
 
@@ -84,14 +85,14 @@
    If :date is specified, a list of constituencies as at the given date is returned.
    If :search is specified, a list of constituencies matching the given search term is returned.
    At present, only one of :date, :search is accepted by the They Work For You API.  If both are provided, the date will be used in preference to the search string."
-  [{:keys [date search] :as terms}]
+  [terms]
   {:pre [(some #{:date :search} (keys terms))]}
   (invoke-twfy "getConstituencies" terms))
 
 (defn person
   "Get details for the person with a given id. Accepts a map containing :id (a string)"
-  [{:keys [id] :as terms}]
-  {:pre [(some? id)]}
+  [terms]
+  {:pre [(some #{:id} (keys terms))]}
   (invoke-twfy "getPerson" terms))
 
 (defn mp
@@ -102,7 +103,7 @@
   - :id (optional) The person ID for the member
   Additionally, for the postcode and constituency options, the following may be provided:
   - :always_return (optional) whether to try to return an MP even if the seat is currently vacant."
-  [{:keys [postcode constituency id always_return] :as terms}]
+  [terms]
   {:pre [(some #{:postcode :constituency :id} (keys terms))]}
   (invoke-twfy "getMP" terms))
 
@@ -111,8 +112,8 @@
    Options:
   - :id (required) The person ID
   - :fields (optional) The fields required in the response, comma separated (blank for all)"
-  [{:keys [id fields] :as terms}]
-  {:pre [(some? id)]}
+  [terms]
+  {:pre [(some #{:id} (keys terms))]}
   (invoke-twfy "getMPInfo" terms))
 
 (defn mps-info
@@ -120,8 +121,8 @@
   Options:
   - :id (required) The person IDs, as a comma separated string
   - :fields (optional) The fields required in the response, comma separated (blank for all)"
-  [{:keys [id fields] :as terms}]
-  {:pre [(some? id)]}
+  [terms]
+  {:pre [(some #{:id} (keys terms))]}
   (invoke-twfy "getMPsInfo" terms))
 
 (defn mps
@@ -130,67 +131,68 @@
    - :date (optional) Return the list of MPs as at this date
    - :party (optional) Return the list of MPs from the given party
    - :search (optional) Return the MPs whose names contain the given search string"
-  [{:keys [date party search] :as terms}]
+  [terms]
   {:pre [(some #{:date :party :search} (keys terms))]}
   (invoke-twfy "getMPs" terms))
-;
-; (defn get-lord
-;   "Return a particular lord.
-;    Options:
-;
-;    - :id (required) The person ID of the lord"
-;   [& {:as opts}]
-;   (call-api "getLord" opts nil))
-;
-; (defn get-lords
-;   "Return a list of lords.
-;    Options:
-;
-;   - :date (optional) Return the list of lords as at this date (NB date is when the lord is introduced in Parliament)
-;   - :party (optional) Return the lords from the given party
-;   - :search (optional) Return the lords whose names contain the given search string"
-;   [& {:as opts}]
-;   (call-api "getLords" opts nil))
-;
-; (defn get-mla
-;   "Return a particular MLA.
-;    Options - at least one of the following must be supplied:
-;
-;   - :postcode (optional) Return the MLA for the given postcode
-;   - :constituency (optional) The name of a constituency
-;   - :id (optional) The person ID of the MLA"
-;   [& {:as opts}]
-;   (call-api "getMLA" opts nil))
-;
-; (defn get-mlas
-;   "Return a list of MLAs.
-;    Options:
-;
-;   - :date (optional) Return the list of MLAs as at the given date
-;   - :party (optional) Return the list of MLAs from the given party
-;   - :search (optional) Return the list of MLAs whose names contain the given search string"
-;   [& {:as opts}]
-;   (call-api "getMLAs" opts nil))
-;
-; (defn get-msp
-;   "Return a particular MSP.
-;    Options - at least one of the following must be supplied:
-;
-;   - :postcode (optional) Return the MSP for a particular postcode
-;   - :constituency (optional) The name of a constituency
-;   - :id (optional) The person ID of the MSP"
-;   [& {:as opts}]
-;   (call-api "getMSP" opts nil))
-;
-; (defn get-msps
-;   "Return a list of MSPs.
-;    Options:
-;
-;   - :date (optional) Return the list of MSPs as at the given date
-;   = :party (optional) Return the list of MSPs from the given party
-;   = :search (optional) Return the list of MSPs whose names contain the given search string"
-;   [& {:as opts}]
-;   (call-api "getMSPs" opts nil))
+
+(defn lord
+  "Return a particular lord.
+   Options:
+   - :id (required) The person ID of the lord"
+  [terms]
+  {:pre [(some #{:id} (keys terms))]}
+  (invoke-twfy "getLord" terms))
+
+(defn lords
+  "Return a list of lords.
+   Options:
+  - :date (optional) Return the list of lords as at this date (NB date is when the lord is introduced in Parliament)
+  - :party (optional) Return the lords from the given party
+  - :search (optional) Return the lords whose names contain the given search string
+  If :date is provided, it will be used in preference to the other terms, which will be ignored."
+  [terms]
+  {:pre [(some #{:date :party :search} (keys terms))]}
+  (invoke-twfy "getLords" terms))
+
+(defn mla
+  "Return a particular MLA.
+   Options - at least one of the following must be supplied:
+  - :postcode (optional) Return the MLA for the given postcode
+  - :constituency (optional) The name of a constituency
+  - :id (optional) The person ID of the MLA"
+  [terms]
+  {:pre [(some #{:postcode :constituency :id} (keys terms))]}
+  (invoke-twfy "getMLA" terms))
+
+(defn mlas
+  "Return a list of MLAs.
+   Options:
+  - :date (optional) Return the list of MLAs as at the given date
+  - :party (optional) Return the list of MLAs from the given party
+  - :search (optional) Return the list of MLAs whose names contain the given search string"
+  [terms]
+  {:pre [(some #{:date :party :search} (keys terms))]}
+  (invoke-twfy "getMLAs" terms))
+
+(defn msp
+  "Return a particular MSP.
+   Options - at least one of the following must be supplied:
+  - :postcode (optional) Return the MSP for a particular postcode
+  - :constituency (optional) The name of a constituency
+  - :id (optional) The person ID of the MSP"
+  [terms]
+  {:pre [(some #{:postcode :constituency :id} (keys terms))]}
+  (invoke-twfy "getMSP" terms))
+
+(defn msps
+  "Return a list of MSPs.
+   Options:
+  - :date (optional) Return the list of MSPs as at the given date
+  = :party (optional) Return the list of MSPs from the given party
+  = :search (optional) Return the list of MSPs whose names contain the given search string"
+  [terms]
+  {:pre [(some #{:date :party :search} (keys terms))]}
+  (invoke-twfy "getMSPs" terms))
 ;
 ; (defn get-geometry
 ;   "Return geometry information for a constituency.
