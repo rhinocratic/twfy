@@ -14,6 +14,9 @@
   (is (= "2016-01-01" (#'twfy.core/date2string "2016-01-01T13:45:30.678Z")))
   (is (= "2016-01-01" (#'twfy.core/date2string #inst "2016-01-01T13:45:30.678Z"))))
 
+(deftest test-preprocess-args
+  (is (= {:search "splinge!" :date "2016-01-01"} (#'twfy.core/preprocess-args {:search "splinge!" :date (java.util.Date. 116 0 1 13 45 30)}))))
+
 (deftest test-convert-url
   (let [res (convert-url {:url "http://www.publications.parliament.uk/pa/cm201314/cmhansrd/cm131106/debtext/131106-0001.htm#131106-0001.htm_spnew47"})]
     (is (.startsWith (:gid res) "uk.org.publicwhip/debate"))
@@ -46,3 +49,8 @@
 (deftest test-mps-info
   (let [constituencies (sort (map #(:constituency (val %)) (mps-info {:id "10133,24910,10544", :fields "constituency"})))]
     (is (= ["Bolsover" "Brighton, Pavilion" "Islington North"] constituencies))))
+
+(deftest test-mps
+  (is (= 650 (count (mps {:date "2016-01-01"}))))
+  (is (= 1 (count (mps {:date "2016-01-01" :party "green"}))))
+  (is (= 2 (count (mps {:search "lucas"})))))

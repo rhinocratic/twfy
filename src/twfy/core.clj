@@ -33,16 +33,6 @@
    map2query
    (str base-uri fname)))
 
-(defn- invoke-twfy
-  "Invokes the \"They Work For You\" API"
-  ([fname]
-   (invoke-twfy fname {}))
-  ([fname args]
-   (-> fname
-    (build-uri args)
-    (slurp)
-    (ch/parse-string true))))
-
 (defmulti to-joda "Convert dates to Joda time instances" class)
 (defmethod to-joda java.util.Date [d] (c/from-date d))
 (defmethod to-joda java.sql.Date [d] (c/from-sql-date d))
@@ -52,9 +42,26 @@
 (defmethod to-joda org.joda.time.ReadableInstant [d] d)
 
 (defn date2string
-  "Convert a date to a string of the form yyyy-MM-dd"
-  [d]
-  (f/unparse (f/formatters :date) (to-joda d)))
+ "Convert a date to a string of the form yyyy-MM-dd"
+ [d]
+ (f/unparse (f/formatters :date) (to-joda d)))
+
+(defn- preprocess-args
+  "Preprocess a map of arguments for an API function"
+  [args]
+  (into {} (map (fn [[k v]]
+                  (cond
+                    (= k :date) [k (date2string v)]
+                    :default [k v]))
+                args)))
+
+(defn- invoke-twfy
+  "Invokes the \"They Work For You\" API"
+  ([fname args]
+   (-> fname
+    (build-uri (preprocess-args args))
+    (slurp)
+    (ch/parse-string true))))
 
 
 ;; ## Main API Functions
@@ -79,9 +86,7 @@
    At present, only one of :date, :search is accepted by the They Work For You API.  If both are provided, the date will be used in preference to the search string."
   [{:keys [date search] :as terms}]
   {:pre [(some #{:date :search} (keys terms))]}
-  (if date
-    (invoke-twfy "getConstituencies" {:date (date2string date)})
-    (invoke-twfy "getConstituencies" {:search search})))
+  (invoke-twfy "getConstituencies" terms))
 
 (defn person
   "Get details for the person with a given id. Accepts a map containing :id (a string)"
@@ -89,7 +94,6 @@
   {:pre [(some? id)]}
   (invoke-twfy "getPerson" terms))
 
-;
 (defn mp
   "Return details for a particular MP.
    Options - at least one of the following must be supplied:
@@ -120,15 +124,15 @@
   {:pre [(some? id)]}
   (invoke-twfy "getMPsInfo" terms))
 
-(defn get-mps
+(defn mps
   "Return a list of MPs
    Options:
-
    - :date (optional) Return the list of MPs as at this date
    - :party (optional) Return the list of MPs from the given party
    - :search (optional) Return the MPs whose names contain the given search string"
-  [& {:as opts}]
-  (invoke-twfy "getMPs" opts nil))
+  [{:keys [date party search] :as terms}]
+  {:pre [(some #{:date :party :search} (keys terms))]}
+  (invoke-twfy "getMPs" terms))
 ;
 ; (defn get-lord
 ;   "Return a particular lord.
