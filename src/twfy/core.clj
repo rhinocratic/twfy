@@ -43,14 +43,10 @@
     (slurp)
     (ch/parse-string true))))
 
-(defn- xor
-  "Exclusive OR"
-  [x y]
-  (and (or x y) (not (and x y))))
-
 (defmulti to-joda "Convert dates to Joda time instances" class)
 (defmethod to-joda java.util.Date [d] (c/from-date d))
 (defmethod to-joda java.sql.Date [d] (c/from-sql-date d))
+(defmethod to-joda java.sql.Timestamp [d] (c/from-sql-time d))
 (defmethod to-joda Long [d] (c/from-long d))
 (defmethod to-joda String [d] (c/from-string d))
 (defmethod to-joda org.joda.time.ReadableInstant [d] d)
@@ -72,56 +68,58 @@
 (defn constituency
   "Search for a UK parliamentary constituency.  The search terms should be a map containing at least one of :name, :postcode"
   [{:keys [name postcode] :as terms}]
-  {:pre [(or (some? name) (some? postcode))]}
+  {:pre [(some #{:name :postcode} (keys terms))]}
   (invoke-twfy "getConstituency" terms))
 
 (defn constituencies
-  "Get a list of UK parliamentary constituencies. The search terms should be a map containing one of :date (a java.util.Date) or :search (a string).
+  "Get a list of UK parliamentary constituencies. The search terms should be a map containing one of :date or :search (a string).
+   :date may be a string (e.g. \"2016-01-01T13:45:42.094Z\"), a java.util.Date, a Long, a java.sql.Date, a java.sql.Timestamp or an org.joda.time.ReadableInstant (e.g. a Clojure instant).
    If :date is specified, a list of constituencies as at the given date is returned.
    If :search is specified, a list of constituencies matching the given search term is returned.
    At present, only one of :date, :search is accepted by the They Work For You API.  If both are provided, the date will be used in preference to the search string."
   [{:keys [date search] :as terms}]
-  {:pre [(xor date search)]}
+  {:pre [(some #{:date :search} (keys terms))]}
   (if date
     (invoke-twfy "getConstituencies" {:date (date2string date)})
     (invoke-twfy "getConstituencies" {:search search})))
 
 (defn person
-  "Get details for the person with a given id. Accepts a map containing :id"
+  "Get details for the person with a given id. Accepts a map containing :id (a string)"
   [{:keys [id] :as terms}]
   {:pre [(some? id)]}
-  (invoke-twfy "getPerson" {:id (str id)}))
+  (invoke-twfy "getPerson" terms))
 
 ;
-; (defn get-mp
-;   "Return details for a particular MP.
-;    Options - at least one of the following must be supplied:
-;
-;   - :postcode (optional)
-;   - :constituency (optional) The name of a constituency.  Note that this will only return the current/most recent entry in the database.
-;   - :id (optional) The person ID for the member
-;   - :always_return (optional) Whether to try to return an MP even if the seat is currently vacant"
-;   [& {:as opts}]
-;   (call-api "getMP" opts nil))
-;
-; (defn get-mp-info
-;   "Returns additional information for a particular person
-;    Options:
-;
-;   - :id (required) The person ID
-;   - :fields (optional) The fields required in the response, comma separated (blank for all)"
-;   [& {:as opts}]
-;   (call-api "getMPInfo" opts nil))
-;
-; (defn get-mps-info
-;   "Return additional information for one or more people.
-;   Options:
-;
-;   - :id (required) The person IDs, as a comma separated string
-;   - :fields (optional) The fields required in the response, comma separated (blank for all)"
-;   [& {:as opts}]
-;   (call-api "getMPsInfo" opts nil))
-;
+(defn mp
+  "Return details for a particular MP.
+   Options - at least one of the following must be supplied:
+  - :postcode (optional)
+  - :constituency (optional) The name of a constituency.  Note that this will only return the current/most recent entry in the database.
+  - :id (optional) The person ID for the member
+  Additionally, for the postcode and constituency options, the following may be provided:
+  - :always_return (optional) whether to try to return an MP even if the seat is currently vacant."
+  [{:keys [postcode constituency id always_return] :as terms}]
+  {:pre [(some #{:postcode :constituency :id} (keys terms))]}
+  (invoke-twfy "getMP" terms))
+
+(defn mp-info
+  "Returns additional information for a particular person
+   Options:
+  - :id (required) The person ID
+  - :fields (optional) The fields required in the response, comma separated (blank for all)"
+  [{:keys [id fields] :as terms}]
+  {:pre [(some? id)]}
+  (invoke-twfy "getMPInfo" terms))
+
+(defn mps-info
+  "Return additional information for one or more people.
+  Options:
+  - :id (required) The person IDs, as a comma separated string
+  - :fields (optional) The fields required in the response, comma separated (blank for all)"
+  [{:keys [id fields] :as terms}]
+  {:pre [(some? id)]}
+  (invoke-twfy "getMPsInfo" terms))
+
 (defn get-mps
   "Return a list of MPs
    Options:
