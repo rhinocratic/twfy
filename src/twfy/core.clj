@@ -51,8 +51,8 @@
   [args]
   (into {} (map (fn [[k v]]
                   (cond
-                    (= k :date) [k (date2string v)]
-                    (some #{k} [:id :person :page]) [k (str v)]
+                    (some #{k} [:date :start_date :end_date]) [k (date2string v)]
+                    (some #{k} [:id :person :pid :page :num]) [k (str v)]
                     (some #{k} [:order :type]) [k (name v)]
                     :default [k v]))
                 args)))
@@ -242,7 +242,7 @@
    - :page (optional, in conjunction with search or person) The page of results to return
    - :num (optional, in conjunction with search or person) The number of results to return"
   [terms]
-  {:pre [(and (some? (:type terms)) (some #{:date :search :person :gid} (keys terms)))]}
+  {:pre [(and (some? (:type terms)) (= 1 (count (select-keys terms #{:date :search :person :gid}))))]}
   (invoke-twfy "getDebates" terms))
 
 (defn get-wrans
@@ -256,45 +256,44 @@
    - :page (optional, in conjunction with search or person) The page of results to return
    - :num (optional, in conjunction with search or person) The number of results to return"
   [terms]
-  {:pre [(some #{:date :search :person :gid} (keys terms))]}
+  {:pre [(= 1 (count (select-keys terms #{:date :search :person :gid})))]}
   (invoke-twfy "getWrans" terms))
 
-; (defn get-wms
-;   "Returns written ministerial statements.
-;   Options - note that (as at 16/11/2012) only one of the following may be supplied:
-;
-;    - :date (optional) Return written ministerial statements for this date
-;    - :search (optional) Return written ministerial statements containing this term
-;    - :person (optional) Return written ministerial statements by person ID
-;    - :gid (optional) Return the written ministerial statement matching this GID
-;    - :order (optional, in conjunction with search or person) 'd' for date ordering, 'r' for relevance ordering
-;    - :page (optional, in conjunction with search or person) The page of results to return
-;    - :num (optional, in conjunction with search or person) The number of results to return"
-;   [& {:as opts}]
-;   (call-api "getWMS" opts nil))
-;
-; (defn get-hansard
-;   "Return all of Hansard.
-;    Options - note that (as at 16/11/2012) only one of the following may be supplied:
-;
-;    - :search (optional) Return data containg this term
-;    - :person (optional) Return data by person ID
-;    - :order (optional, in conjunction with search or person) 'd' for date ordering, 'r' for relevance ordering
-;    - :page (optional, in conjunction with search or person) The page of results to return
-;    - :num (optional, in conjunction with search or person) The number of results to return"
-;   [& {:as opts}]
-;   (call-api "getHansard" opts nil))
-;
-; (defn get-comments
-;   "Return comments left on TheyWorkForYou.  With no arguments, returns the most recent comments in
-;    reverse date order.
-;    Options:
-;
-;    - :pid (required) Return comments made on a particular person ID (MP or Lord)
-;    - :start_date (optional) Return comments made on or after this date
-;    - :end_date (optional) Return comments made on or before this date
-;    - :search (optional) Return comments containing this term
-;    - :page (optional) The page of results to return
-;    - :num (optional) The number of result to return"
-;   [& {:as opts}]
-;   (call-api "getComments" opts nil))
+(defn get-wms
+  "Returns written ministerial statements.
+  Options - note that (as at 16/11/2012) only one of the following may be supplied:
+   - :date (optional) Return written ministerial statements for this date
+   - :search (optional) Return written ministerial statements containing this term
+   - :person (optional) Return written ministerial statements by person ID
+   - :gid (optional) Return the written ministerial statement matching this GID
+   - :order (optional, in conjunction with search or person) :d for date ordering, :r for relevance ordering
+   - :page (optional, in conjunction with search or person) The page of results to return
+   - :num (optional, in conjunction with search or person) The number of results to return"
+  [terms]
+  {:pre [(= 1 (count (select-keys terms #{:date :search :person :gid})))]}
+  (invoke-twfy "getWMS" terms))
+
+(defn get-hansard
+  "Return all of Hansard.
+   Options - note that (as at 16/11/2012) only one of the following may be supplied:
+   - :search (optional) Return data containg this term
+   - :person (optional) Return data by person ID
+   - :order (optional, in conjunction with search or person) :d for date ordering, :r for relevance ordering
+   - :page (optional, in conjunction with search or person) The page of results to return
+   - :num (optional, in conjunction with search or person) The number of results to return"
+  [terms]
+  {:pre [(= 1 (count (select-keys terms #{:search :person})))]}
+  (invoke-twfy "getHansard" terms))
+
+(defn get-comments
+  "Return comments left on TheyWorkForYou.  With no arguments, returns the most recent comments in
+   reverse date order.
+   Options:
+   - :pid (optional) Return comments made on a particular person ID (MP or Lord)
+   - :start_date (optional) Return comments made on or after this date
+   - :end_date (optional) Return comments made on or before this date
+   - :search (optional) Return comments containing this term
+   - :page (optional) The page of results to return
+   - :num (optional) The number of result to return"
+  [terms]
+  (invoke-twfy "getComments" terms))
