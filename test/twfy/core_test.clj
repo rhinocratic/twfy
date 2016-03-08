@@ -99,6 +99,15 @@
 ;   (is (= 3 (count (boundary {:name "Morecambe and Lunesdale"}))))
 ;   (is (thrown? AssertionError (boundary {}))))
 ;
-(deftest test-committee
-  (is (= ["EU Home Affairs Sub-Committee" "Home Affairs Committee"] (sort (map :name (:committees (committee {:name "Home Affairs Committee"}))))))
-  (is (thrown? AssertionError (committee {}))))
+; (deftest test-committee
+;   (is (= ["EU Home Affairs Sub-Committee" "Home Affairs Committee"] (sort (map :name (:committees (committee {:name "Home Affairs Committee"}))))))
+;   (is (thrown? AssertionError (committee {}))))
+;
+; (deftest test-debates
+;   (is (= "11:30:00" (get-in (first (debates {:type :commons :date "2016-03-01"})) [:entry :htime])))
+;   (is (= 1212 (get-in (debates {:type :lords :search "fish"}) [:info :total_results])))
+;   (is (= 5843 (get-in (debates {:type :commons :person 10133}) [:info :total_results])))
+;   (is (= "101" (:major (second (debates {:type :lords :gid "2006-07-14a.946.0"})))))
+;   (is (= "2016-03-03" (:hdate (first (:rows (debates {:type :lords :search "fish" :order :d}))))))
+;   (is (thrown? AssertionError (debates {})))
+;   (is (thrown? AssertionError (debates {:date "2016-03-01"}))))

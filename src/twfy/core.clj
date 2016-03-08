@@ -53,6 +53,9 @@
                   (cond
                     (= k :date) [k (date2string v)]
                     (= k :id) [k (str v)]
+                    (= k :person) [k (str v)]
+                    (= k :order) [k (name v)]
+                    (= k :type) [k (name v)]
                     :default [k v]))
                 args)))
 
@@ -229,20 +232,20 @@
   {:pre [(some #{:name :date} (keys terms))]}
   (invoke-twfy "getCommittee" terms))
 
-; (defn get-debates
-;   "Returns debates.
-;    Options - note that (as at 16/11/2012) only one of the optional items may be supplied:
-;
-;    - :type (required) One of \"commons\", \"westminsterhall\", \"lords\", \"scotland\" or \"northernireland\"
-;    - :date (optional) Return debates for this date
-;    - :search (optional) Return debates containing this term
-;    - :person (optional) Return debates by person ID
-;    - :gid (optional) Return the speech or debate matching this GID
-;    - :order (optional, in conjunction with search or person) 'd' for date ordering, 'r' for relevance ordering
-;    - :page (optional, in conjunction with search or person) The page of results to return
-;    - :num (optional, in conjunction with search or person) The number of results to return"
-;   [& {:as opts}]
-;   (call-api "getDebates" opts nil))
+(defn debates
+  "Returns debates.
+   Options - note that (as at 16/11/2012) only one of the optional items may be supplied:
+   - :type (required) One of :commons, :westminsterhall, :lords, :scotland or :northernireland
+   - :date (optional) Return debates for this date
+   - :search (optional) Return debates containing this term
+   - :person (optional) Return debates by person ID
+   - :gid (optional) Return the speech or debate matching this GID
+   - :order (optional, in conjunction with search or person) :d for date ordering, :r for relevance ordering
+   - :page (optional, in conjunction with search or person) The page of results to return
+   - :num (optional, in conjunction with search or person) The number of results to return"
+  [terms]
+  {:pre [(and (some? (:type terms)) (some #{:date :search :person :gid} (keys terms)))]}
+  (invoke-twfy "getDebates" terms))
 ;
 ; (defn get-wrans
 ;   "Returns written answers.
