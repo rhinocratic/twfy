@@ -245,7 +245,7 @@
   {:pre [(and (some? (:type terms)) (= 1 (count (select-keys terms #{:date :search :person :gid}))))]}
   (invoke-twfy "getDebates" terms))
 
-(defn get-wrans
+(defn wrans
   "Returns written answers.
    Options - note that (as at 16/11/2012) only one of the following may be supplied:
    - :date (optional) Return written answers for this date
@@ -259,7 +259,7 @@
   {:pre [(= 1 (count (select-keys terms #{:date :search :person :gid})))]}
   (invoke-twfy "getWrans" terms))
 
-(defn get-wms
+(defn wms
   "Returns written ministerial statements.
   Options - note that (as at 16/11/2012) only one of the following may be supplied:
    - :date (optional) Return written ministerial statements for this date
@@ -273,7 +273,7 @@
   {:pre [(= 1 (count (select-keys terms #{:date :search :person :gid})))]}
   (invoke-twfy "getWMS" terms))
 
-(defn get-hansard
+(defn hansard
   "Return all of Hansard.
    Options - note that (as at 16/11/2012) only one of the following may be supplied:
    - :search (optional) Return data containg this term
@@ -285,7 +285,7 @@
   {:pre [(= 1 (count (select-keys terms #{:search :person})))]}
   (invoke-twfy "getHansard" terms))
 
-(defn get-comments
+(defn comments
   "Return comments left on TheyWorkForYou.  With no arguments, returns the most recent comments in
    reverse date order.
    Options:

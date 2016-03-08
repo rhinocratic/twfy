@@ -111,3 +111,20 @@
 ;   (is (= "2016-03-03" (:hdate (first (:rows (debates {:type :lords :search "fish" :order :d :page 1}))))))
 ;   (is (thrown? AssertionError (debates {})))
 ;   (is (thrown? AssertionError (debates {:date "2016-03-01"}))))
+;   (is (thrown? AssertionError (debates {:date "2016-03-01" :person 10133})))
+;
+; (deftest test-wrans
+;   (is (= "Department for Transport" (get-in (first (wrans {:date "2016-03-01"})) [:entry :body])))
+;   (is (= 7319 (:total_results (second (first (wrans {:search "fish"}))))))
+;   (is (= 2019 (:total_results (second (first (wrans {:person 10133}))))))
+;   (is (= "Department for Business, Innovation and Skills" (:body (first (wrans {:gid "2015-07-21.8285.q0"})))))
+;   (is (thrown? AssertionError (wrans {})))
+;   (is (thrown? AssertionError (wrans {:date "2016-03-01" :person 10133}))))
+;
+; (deftest test-wms
+;   (is (= "Department for Work and Pensions" (get-in (first (wms {:date "2016-03-01"})) [:entry :body])))
+;   (is (= 229 (:total_results (last (first (wms {:search "fish"}))))))
+;   (is (= 0 (:total_results (last (first (wms {:person 10133}))))))
+;   (is (= "Deputy Prime Minister" (:body (first (wms {:gid "2005-10-27a.13WS.0"})))))
+;   (is (thrown? AssertionError (wms {})))
+;   (is (thrown? AssertionError (wms {:search "fish" :person 10133}))))
