@@ -84,3 +84,13 @@
 ;   (is (= 6 (count (msp {:constituency "Lothian"}))))
 ;   (is (= 8 (count (msp {:postcode "EH39 5NN"}))))
 ;   (is (thrown? AssertionError (msp {}))))
+;
+(deftest test-msps
+  (is (= 128 (count (msps {:date "2016-01-01"}))))
+  (is (= 2 (count (msps {:party "green"}))))
+  (is (= 2 (count (msps {:search "Johnstone"}))))
+  (is (thrown? AssertionError (msps {}))))
+
+(deftest test-geometry
+  (is (= 370195.4 (:max_e (geometry {:name "Morecambe and Lunesdale"}))))
+  (is (thrown? AssertionError (geometry {}))))

@@ -193,23 +193,23 @@
   [terms]
   {:pre [(some #{:date :party :search} (keys terms))]}
   (invoke-twfy "getMSPs" terms))
-;
-; (defn get-geometry
-;   "Return geometry information for a constituency.
-;    Options:
-;
-;   - :name (required) The name of the constituency"
-;   [& {:as opts}]
-;   (call-api "getGeometry" opts nil))
-;
-; (defn get-boundary
-;   "Return the KML file for a UK Parliament constituency.
-;    Options:
-;
-;   - :name (required) The name of the constituency"
-;   [& {:as opts}]
-;   (call-api "getBoundary" opts {:output "clj-xml"}))
-;
+
+(defn geometry
+  "Return geometry information for a constituency.
+   Options:
+  - :name (required) The name of the constituency"
+  [terms]
+  {:pre [(some #{:name} (keys terms))]}
+  (invoke-twfy "getGeometry" terms))
+
+(defn boundary
+  "Return the KML file for a UK Parliament constituency.
+   Options:
+  - :name (required) The name of the constituency"
+  [terms]
+  {:pre [(some #{:name} (keys terms))]}
+  (invoke-twfy "getBoundary" terms))
+
 ; (defn get-committee
 ;   "Return the members of a select committee.
 ;    Options - at least one of the following must be supplied:
