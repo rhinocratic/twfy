@@ -135,3 +135,7 @@
 ;   (is (thrown? AssertionError (hansard {})))
 ;   (is (thrown? AssertionError (hansard {:search "fish" :person 10133}))))
 ;
+; (deftest test-comments
+;   (is (= 143 (count (:comments (comments {:start_date "2016-01-01" :end_date "2016-03-01"})))))
+;   (is (= 12 (count (:comments (comments {:search "fish" :num 12})))))
+;   (is (= 25 (count (:comments (comments {:pid 10133}))))))

@@ -293,6 +293,7 @@
    - :start_date (optional) Return comments made on or after this date
    - :end_date (optional) Return comments made on or before this date
    - :search (optional) Return comments containing this term
+   The following options are as yet only implemented by the API in combination with :search
    - :page (optional) The page of results to return
    - :num (optional) The number of result to return"
   [terms]
