@@ -217,18 +217,18 @@
    slurp
    (parse-xml)))
 
-; (defn get-committee
-;   "Return the members of a select committee.
-;    Options - at least one of the following must be supplied:
-;
-;   - :name (optional) Return the members of the committee matching this name or, if more than one
-;     committee is found, the names of the committees
-;   - :date (optional) Return the members of the committee as at this date.
-;   N.B. As at 16/11/2012, a date prior to that of the 2010 general election must be supplied in order
-;   to yield any results"
-;   [& {:as opts}]
-;   (call-api "getCommittee" opts nil))
-;
+(defn committee
+  "Return the members of a select committee.
+   Options - at least one of the following must be supplied:
+  - :name (optional) Return the members of the committee matching this name or, if more than one
+    committee is found, the names of the committees
+  - :date (optional) Return the members of the committee as at this date.
+  N.B. As at 16/11/2012, a date prior to that of the 2010 general election must be supplied in order
+  to yield any results"
+  [terms]
+  {:pre [(some #{:name :date} (keys terms))]}
+  (invoke-twfy "getCommittee" terms))
+
 ; (defn get-debates
 ;   "Returns debates.
 ;    Options - note that (as at 16/11/2012) only one of the optional items may be supplied:

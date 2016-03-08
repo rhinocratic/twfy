@@ -98,3 +98,7 @@
 ; (deftest test-boundary
 ;   (is (= 3 (count (boundary {:name "Morecambe and Lunesdale"}))))
 ;   (is (thrown? AssertionError (boundary {}))))
+;
+(deftest test-committee
+  (is (= ["EU Home Affairs Sub-Committee" "Home Affairs Committee"] (sort (map :name (:committees (committee {:name "Home Affairs Committee"}))))))
+  (is (thrown? AssertionError (committee {}))))
