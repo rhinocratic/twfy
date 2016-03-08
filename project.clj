@@ -1,4 +1,4 @@
-(defproject twfy "0.2.0-SNAPSHOT"
+(defproject twfy "0.2.0"
   :description "Clojure bindings for the [TheyWorkForYou](http://www.theyworkforyou.com/) [API](http://www.theyworkforyou.com/api/)"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
