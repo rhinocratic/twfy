@@ -128,3 +128,10 @@
 ;   (is (= "Deputy Prime Minister" (:body (first (wms {:gid "2005-10-27a.13WS.0"})))))
 ;   (is (thrown? AssertionError (wms {})))
 ;   (is (thrown? AssertionError (wms {:search "fish" :person 10133}))))
+;
+; (deftest test-hansard
+;   (is (= 22311 (:total_results (last (first (hansard {:search "fish"}))))))
+;   (is (= 8696  (:total_results (last (first (hansard {:person 10133}))))))
+;   (is (thrown? AssertionError (hansard {})))
+;   (is (thrown? AssertionError (hansard {:search "fish" :person 10133}))))
+;
