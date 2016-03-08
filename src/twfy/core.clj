@@ -6,6 +6,7 @@
             [clojure.xml :as xml]
             [clojure.zip :as zip]
             [environ.core :refer [env]]
+            [clj-time.coerce :as c]
             [clj-time.format :as f]))
 
 (def ^{:private true} api-key
@@ -16,32 +17,21 @@
   "The base URI of the \"They Work For You\" API. May be overridden by setting environment variable :twfy-base-api"
   (or (env :twfy-base-api) "http://theyworkforyou.com/api/"))
 
-(def ^{:private true} global-defaults
-  "Global default options for invoking the API."
-  {:output "clj-json"})
-
-(defn- url-encode
-  "URL-encode a string"
-  [s]
-  (java.net.URLEncoder/encode s "UTF-8"))
-
-(defn- encode-kv-pair
-  "URL-encode a key-value pair"
-  [[k v]]
-  (str/join "=" (map url-encode [(name k) v])))
-
 (defn- map2query
-  "Translates a map into a URL-encoded query string."
+  "Translates a map into a query string."
   [m]
-  (str "?" (str/join "&" (map encode-kv-pair m))))
+  (letfn [(urlencode [s] (java.net.URLEncoder/encode s "UTF-8"))]
+    (->> m
+      (map (fn [[k v]] (str (name k) "=" (urlencode v))))
+      (str/join "&")
+      (str "?"))))
 
 (defn- build-uri
   "Build the URI for an API function from the function name and arguments"
   [fname args]
-  (->> {:key api-key}
-    (merge args)
-    (map2query)
-    (str base-uri fname)))
+  (->> (assoc args :key api-key)
+   map2query
+   (str base-uri fname)))
 
 (defn- invoke-twfy
   "Invokes the \"They Work For You\" API"
@@ -53,36 +43,54 @@
     (slurp)
     (ch/parse-string true))))
 
+(defn- xor
+  "Exclusive OR"
+  [x y]
+  (and (or x y) (not (and x y))))
+
+(defmulti to-joda "Convert dates to Joda time instances" class)
+(defmethod to-joda java.util.Date [d] (c/from-date d))
+(defmethod to-joda java.sql.Date [d] (c/from-sql-date d))
+(defmethod to-joda Long [d] (c/from-long d))
+(defmethod to-joda String [d] (c/from-string d))
+(defmethod to-joda org.joda.time.ReadableInstant [d] d)
+
+(defn date2string
+  "Convert a date to a string of the form yyyy-MM-dd"
+  [d]
+  (f/unparse (f/formatters :date) (to-joda d)))
+
 
 ;; ## Main API Functions
 
 (defn convert-url
-  "Converts a parliament.uk Hansard URL into a TheyWorkForYou one, if possible."
-  [url]
-  (invoke-twfy "convertURL" {:url url}))
+  "Converts a parliament.uk Hansard URL into a TheyWorkForYou one, if possible. Accepts a map containing :url (the URL to be converted)"
+  [{:keys [url] :as terms}]
+  {:pre [(some? url)]}
+  (invoke-twfy "convertURL" terms))
 
 (defn constituency
   "Search for a UK parliamentary constituency.  The search terms should be a map containing at least one of :name, :postcode"
   [{:keys [name postcode] :as terms}]
-  {:pre [(< 0 (count terms))]}
+  {:pre [(or (some? name) (some? postcode))]}
   (invoke-twfy "getConstituency" terms))
 
 (defn constituencies
   "Get a list of UK parliamentary constituencies. The search terms should be a map containing one of :date (a java.util.Date) or :search (a string).
    If :date is specified, a list of constituencies as at the given date is returned.
    If :search is specified, a list of constituencies matching the given search term is returned.
-   At present, only one of :date, :search can be given."
+   At present, only one of :date, :search is accepted by the They Work For You API.  If both are provided, the date will be used in preference to the search string."
   [{:keys [date search] :as terms}]
-  {:pre [(= 1 (count terms))]}
-  (println terms)
+  {:pre [(xor date search)]}
   (if date
-    (invoke-twfy "getConstituencies" {:date (f/unparse (f/formatters :date) date)})
+    (invoke-twfy "getConstituencies" {:date (date2string date)})
     (invoke-twfy "getConstituencies" {:search search})))
 
 (defn person
-  "Get details for the person with the given id."
-  [id]
-  (invoke-twfy "getPerson" {:id id}))
+  "Get details for the person with a given id. Accepts a map containing :id"
+  [{:keys [id] :as terms}]
+  {:pre [(some? id)]}
+  (invoke-twfy "getPerson" {:id (str id)}))
 
 ;
 ; (defn get-mp
@@ -114,15 +122,15 @@
 ;   [& {:as opts}]
 ;   (call-api "getMPsInfo" opts nil))
 ;
-; (defn get-mps
-;   "Return a list of MPs
-;    Options:
-;
-;    - :date (optional) Return the list of MPs as at this date
-;    - :party (optional) Return the list of MPs from the given party
-;    - :search (optional) Return the MPs whose names contain the given search string"
-;   [& {:as opts}]
-;   (call-api "getMPs" opts nil))
+(defn get-mps
+  "Return a list of MPs
+   Options:
+
+   - :date (optional) Return the list of MPs as at this date
+   - :party (optional) Return the list of MPs from the given party
+   - :search (optional) Return the MPs whose names contain the given search string"
+  [& {:as opts}]
+  (invoke-twfy "getMPs" opts nil))
 ;
 ; (defn get-lord
 ;   "Return a particular lord.

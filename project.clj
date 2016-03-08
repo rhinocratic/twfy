@@ -8,6 +8,6 @@
                  [environ "1.0.2"]
                  [clj-time "0.11.0"]]
   :plugins [[lein-environ "1.0.2"]
-            [com.jakemccrary/lein-test-refresh "0.12.0"]
+            [com.jakemccrary/lein-test-refresh "0.14.0"]
             [venantius/ultra "0.4.0"]
             [lein-marginalia "0.7.1"]])
