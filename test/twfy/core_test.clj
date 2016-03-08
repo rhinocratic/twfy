@@ -78,19 +78,23 @@
 ;   (is (= 1 (count (mlas {:party "green"}))))
 ;   (is (= 1 (count (mlas {:search "Agnew"}))))
 ;   (is (thrown? AssertionError (mlas {}))))
-;
+
 ; (deftest test-msp
 ;   (is (= "Alison Johnstone" (:full_name (first (msp {:id 25091})))))
 ;   (is (= 6 (count (msp {:constituency "Lothian"}))))
 ;   (is (= 8 (count (msp {:postcode "EH39 5NN"}))))
 ;   (is (thrown? AssertionError (msp {}))))
 ;
-(deftest test-msps
-  (is (= 128 (count (msps {:date "2016-01-01"}))))
-  (is (= 2 (count (msps {:party "green"}))))
-  (is (= 2 (count (msps {:search "Johnstone"}))))
-  (is (thrown? AssertionError (msps {}))))
-
-(deftest test-geometry
-  (is (= 370195.4 (:max_e (geometry {:name "Morecambe and Lunesdale"}))))
-  (is (thrown? AssertionError (geometry {}))))
+; (deftest test-msps
+;   (is (= 128 (count (msps {:date "2016-01-01"}))))
+;   (is (= 2 (count (msps {:party "green"}))))
+;   (is (= 2 (count (msps {:search "Johnstone"}))))
+;   (is (thrown? AssertionError (msps {}))))
+;
+; (deftest test-geometry
+;   (is (= 370195.4 (:max_e (geometry {:name "Morecambe and Lunesdale"}))))
+;   (is (thrown? AssertionError (geometry {}))))
+;
+; (deftest test-boundary
+;   (is (= 3 (count (boundary {:name "Morecambe and Lunesdale"}))))
+;   (is (thrown? AssertionError (boundary {}))))

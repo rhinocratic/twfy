@@ -4,10 +4,10 @@
   (:require [clojure.string :as str]
             [cheshire.core :as ch]
             [clojure.xml :as xml]
-            [clojure.zip :as zip]
             [environ.core :refer [env]]
             [clj-time.coerce :as c]
             [clj-time.format :as f]))
+
 
 (def ^{:private true} api-key
   "The \"They Work For You\" API key"
@@ -61,7 +61,7 @@
   ([fname terms]
    (-> fname
     (build-uri (preprocess-terms terms))
-    (slurp)
+    slurp
     (ch/parse-string true))))
 
 
@@ -202,13 +202,20 @@
   {:pre [(some #{:name} (keys terms))]}
   (invoke-twfy "getGeometry" terms))
 
+(defn- parse-xml
+  [x]
+  (xml/parse (java.io.ByteArrayInputStream. (.getBytes x))))
+
 (defn boundary
   "Return the KML file for a UK Parliament constituency.
    Options:
   - :name (required) The name of the constituency"
   [terms]
   {:pre [(some #{:name} (keys terms))]}
-  (invoke-twfy "getBoundary" terms))
+  (-> "getBoundary"
+   (build-uri (preprocess-terms terms))
+   slurp
+   (parse-xml)))
 
 ; (defn get-committee
 ;   "Return the members of a select committee.
