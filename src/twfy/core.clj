@@ -13,6 +13,9 @@
   "The \"They Work For You\" API key"
   (env :twfy-api-key))
 
+(if (not api-key)
+  (println "No key found for the \"They Work For You\" API!"))
+
 (def ^{:private true} base-uri
   "The base URI of the \"They Work For You\" API. May be overridden by setting environment variable :twfy-base-api"
   (or (env :twfy-base-api) "http://theyworkforyou.com/api/"))
@@ -60,10 +63,12 @@
 (defn- invoke-twfy
   "Invokes the \"They Work For You\" API"
   ([fname terms]
-   (-> fname
-    (build-uri (preprocess-terms terms))
-    slurp
-    (ch/parse-string true))))
+   (if (not api-key)
+     "No key found for the \"They Work For You\" API!"
+     (-> fname
+      (build-uri (preprocess-terms terms))
+      slurp
+      (ch/parse-string true)))))
 
 
 ;; ## Main API Functions

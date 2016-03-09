@@ -20,7 +20,7 @@ Alternatively, add this to your Maven project's `pom.xml`:
 </dependency>
 ```
 
-In order to invoke any of the API methods, you'll need to obtain a TWFY [API key](http://www.theyworkforyou.com/api/key), which this library expects to pick up from an environment variable called TWFY_API_KEY.  For testing purposes, you can put the key in your profiles.clj file:
+In order to invoke any of the API methods, you'll need to obtain a TWFY [API key](http://www.theyworkforyou.com/api/key), which this library expects to pick up from an environment variable called TWFY_API_KEY.  For testing purposes, you can add a reference to [`lein-environ`](https://github.com/weavejester/environ) to the `:plugins` section of your `project.clj`, and put the key in `profiles.clj`:
 ```
 {:dev
   {:env
