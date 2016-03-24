@@ -62,244 +62,303 @@
 
 (defn- invoke-twfy
   "Invokes the \"They Work For You\" API"
-  ([fname terms]
-   (if (not api-key)
-     "No key found for the \"They Work For You\" API!"
-     (-> fname
+  [fname terms callback]
+  (if (not api-key)
+    "No key found for the \"They Work For You\" API!"
+    (-> fname
       (build-uri (preprocess-terms terms))
       slurp
-      (ch/parse-string true)))))
+      (ch/parse-string true)
+      callback)))
 
+(defmacro def-twfy-call
+  "Wraps the invocation of a twfy API method in a function that optionally accepts a
+   callback. Arguments:
+   - fname : The name of the function to be defined.
+   - twfy-api-name : The name of the twfy API method to be invoked.
+   - docstring : The docstring for the function.
+   - pre : A precondition to be applied to the arguments of the function"
+  [fname twfy-api-name docstring pre]
+  `(defn ~(symbol fname) {:arglists '([~'terms] [~'terms ~'callback]) :doc ~docstring}
+    ([terms#]
+     (~(symbol fname) terms# identity))
+    ([terms# callback#]
+     {:pre [(~pre terms#)]}
+     (invoke-twfy ~twfy-api-name terms# callback#))))
+
+(defn- parse-xml
+  "Parse XML into a Clojure data structure (used by the \"boundary\" API call)"
+  [x]
+  (xml/parse (java.io.ByteArrayInputStream. (.getBytes x))))
 
 ;; ## Main API Functions
 
-(defn convert-url
-  "Converts a parliament.uk Hansard URL into a TheyWorkForYou one, if possible. Accepts a map containing :url (the URL to be converted)"
-  [terms]
-  {:pre [(some #{:url} (keys terms))]}
-  (invoke-twfy "convertURL" terms))
+(def-twfy-call
+  "convert-url"
+  "convertURL"
+  "Converts a parliament.uk Hansard URL into a TheyWorkForYou one, if possible.
+   Accepts a map containing :url (the URL to be converted)"
+   (fn [terms] (some #{:url} (keys terms))))
 
-(defn constituency
-  "Search for a UK parliamentary constituency.  The search terms should be a map containing at least one of :name, :postcode"
-  [terms]
-  {:pre [(some #{:name :postcode} (keys terms))]}
-  (invoke-twfy "getConstituency" terms))
+(def-twfy-call
+  "constituency"
+  "getConstituency"
+  "Search for a UK parliamentary constituency.  The search terms should be a
+   map containing at least one of :name, :postcode"
+   (fn [terms] (some #{:name :postcode} (keys terms))))
 
-(defn constituencies
-  "Get a list of UK parliamentary constituencies. The search terms should be a map containing one of :date or :search (a string).
-   :date may be a string (e.g. \"2016-01-01T13:45:42.094Z\"), a java.util.Date, a Long, a java.sql.Date, a java.sql.Timestamp or an org.joda.time.ReadableInstant (e.g. a Clojure instant).
-   If :date is specified, a list of constituencies as at the given date is returned.
-   If :search is specified, a list of constituencies matching the given search term is returned.
-   At present, only one of :date, :search is accepted by the They Work For You API.  If both are provided, the date will be used in preference to the search string."
-  [terms]
-  {:pre [(some #{:date :search} (keys terms))]}
-  (invoke-twfy "getConstituencies" terms))
+(def-twfy-call
+  "constituencies"
+  "getConstituencies"
+  "Get a list of UK parliamentary constituencies. The search terms should be a
+   map containing one of :date or :search (a string).
+   :date may be a string (e.g. \"2016-01-01T13:45:42.094Z\"), a java.util.Date,
+   a Long, a java.sql.Date, a java.sql.Timestamp or an
+   org.joda.time.ReadableInstant (e.g. a Clojure instant).
+   If :date is specified, a list of constituencies as at the given date is
+   returned.
+   If :search is specified, a list of constituencies matching the given search
+   term is returned.
+   At present, only one of :date, :search is accepted by the They Work For You
+   API.  If both are provided, the date will be used in preference to the
+   search string."
+   (fn [terms] (some #{:date :search} (keys terms))))
 
-(defn person
-  "Get details for the person with a given id. Accepts a map containing :id (a string)"
-  [terms]
-  {:pre [(some #{:id} (keys terms))]}
-  (invoke-twfy "getPerson" terms))
+(def-twfy-call
+  "person"
+  "getPerson"
+  "Get details for the person with a given id. Accepts a map containing :id
+  (a string)"
+  (fn [terms] (some #{:id} (keys terms))))
 
-(defn mp
+(def-twfy-call
+  "mp"
+  "getMP"
   "Return details for a particular MP.
-   Options - at least one of the following must be supplied:
+  Options - at least one of the following must be supplied:
   - :postcode (optional)
-  - :constituency (optional) The name of a constituency.  Note that this will only return the current/most recent entry in the database.
+  - :constituency (optional) The name of a constituency.  Note that this will
+    only return the current/most recent entry in the database.
   - :id (optional) The person ID for the member
-  Additionally, for the postcode and constituency options, the following may be provided:
-  - :always_return (optional) whether to try to return an MP even if the seat is currently vacant."
-  [terms]
-  {:pre [(some #{:postcode :constituency :id} (keys terms))]}
-  (invoke-twfy "getMP" terms))
+  Additionally, for the postcode and constituency options, the following may
+  be provided:
+  - :always_return (optional) whether to try to return an MP even if the seat
+    is currently vacant."
+  (fn [terms] (some #{:postcode :constituency :id} (keys terms))))
 
-(defn mp-info
+(def-twfy-call
+  "mp-info"
+  "getMPInfo"
   "Returns additional information for a particular person
    Options:
   - :id (required) The person ID
-  - :fields (optional) The fields required in the response, comma separated (blank for all)"
-  [terms]
-  {:pre [(some #{:id} (keys terms))]}
-  (invoke-twfy "getMPInfo" terms))
+  - :fields (optional) The fields required in the response, comma separated
+    (blank for all)"
+  (fn [terms] (some #{:id} (keys terms))))
 
-(defn mps-info
+(def-twfy-call
+  "mps-info"
+  "getMPsInfo"
   "Return additional information for one or more people.
   Options:
   - :id (required) The person IDs, as a comma separated string
-  - :fields (optional) The fields required in the response, comma separated (blank for all)"
-  [terms]
-  {:pre [(some #{:id} (keys terms))]}
-  (invoke-twfy "getMPsInfo" terms))
+  - :fields (optional) The fields required in the response, comma separated
+    (blank for all)"
+  (fn [terms] (some #{:id} (keys terms))))
 
-(defn mps
+(def-twfy-call
+  "mps"
+  "getMPs"
   "Return a list of MPs
    Options:
    - :date (optional) Return the list of MPs as at this date
    - :party (optional) Return the list of MPs from the given party
-   - :search (optional) Return the MPs whose names contain the given search string"
-  [terms]
-  {:pre [(some #{:date :party :search} (keys terms))]}
-  (invoke-twfy "getMPs" terms))
+   - :search (optional) Return the MPs whose names contain the given search
+     string"
+  (fn [terms] (some #{:date :party :search} (keys terms))))
 
-(defn lord
+(def-twfy-call
+  "lord"
+  "getLord"
   "Return a particular lord.
    Options:
    - :id (required) The person ID of the lord"
-  [terms]
-  {:pre [(some #{:id} (keys terms))]}
-  (invoke-twfy "getLord" terms))
+   (fn [terms] (some #{:id} (keys terms))))
 
-(defn lords
+(def-twfy-call
+  "lords"
+  "getLords"
   "Return a list of lords.
    Options:
-  - :date (optional) Return the list of lords as at this date (NB date is when the lord is introduced in Parliament)
+  - :date (optional) Return the list of lords as at this date (NB date is when
+    the lord is introduced in Parliament)
   - :party (optional) Return the lords from the given party
-  - :search (optional) Return the lords whose names contain the given search string
-  If :date is provided, it will be used in preference to the other terms, which will be ignored."
-  [terms]
-  {:pre [(some #{:date :party :search} (keys terms))]}
-  (invoke-twfy "getLords" terms))
+  - :search (optional) Return the lords whose names contain the given search
+    string
+  If :date is provided, it will be used in preference to the other terms,
+  which will be ignored."
+  (fn [terms] (some #{:date :party :search} (keys terms))))
 
-(defn mla
+(def-twfy-call
+  "mla"
+  "getMLA"
   "Return a particular MLA.
    Options - at least one of the following must be supplied:
   - :postcode (optional) Return the MLA for the given postcode
   - :constituency (optional) The name of a constituency
   - :id (optional) The person ID of the MLA"
-  [terms]
-  {:pre [(some #{:postcode :constituency :id} (keys terms))]}
-  (invoke-twfy "getMLA" terms))
+  (fn [terms] (some #{:postcode :constituency :id} (keys terms))))
 
-(defn mlas
+(def-twfy-call
+  "mlas"
+  "getMLAs"
   "Return a list of MLAs.
    Options:
   - :date (optional) Return the list of MLAs as at the given date
   - :party (optional) Return the list of MLAs from the given party
-  - :search (optional) Return the list of MLAs whose names contain the given search string"
-  [terms]
-  {:pre [(some #{:date :party :search} (keys terms))]}
-  (invoke-twfy "getMLAs" terms))
+  - :search (optional) Return the list of MLAs whose names contain the given
+    search string"
+  (fn [terms] (some #{:date :party :search} (keys terms))))
 
-(defn msp
+(def-twfy-call
+  "msp"
+  "getMSP"
   "Return a particular MSP.
    Options - at least one of the following must be supplied:
   - :postcode (optional) Return the MSP for a particular postcode
   - :constituency (optional) The name of a constituency
   - :id (optional) The person ID of the MSP"
-  [terms]
-  {:pre [(some #{:postcode :constituency :id} (keys terms))]}
-  (invoke-twfy "getMSP" terms))
+  (fn [terms] (some #{:postcode :constituency :id} (keys terms))))
 
-(defn msps
+(def-twfy-call
+  "msps"
+  "getMSPs"
   "Return a list of MSPs.
    Options:
   - :date (optional) Return the list of MSPs as at the given date
-  = :party (optional) Return the list of MSPs from the given party
-  = :search (optional) Return the list of MSPs whose names contain the given search string"
-  [terms]
-  {:pre [(some #{:date :party :search} (keys terms))]}
-  (invoke-twfy "getMSPs" terms))
+  - :party (optional) Return the list of MSPs from the given party
+  - :search (optional) Return the list of MSPs whose names contain the given
+    search string"
+  (fn [terms] (some #{:date :party :search} (keys terms))))
 
-(defn geometry
+(def-twfy-call
+  "geometry"
+  "getGeometry"
   "Return geometry information for a constituency.
    Options:
   - :name (required) The name of the constituency"
-  [terms]
-  {:pre [(some #{:name} (keys terms))]}
-  (invoke-twfy "getGeometry" terms))
-
-(defn- parse-xml
-  [x]
-  (xml/parse (java.io.ByteArrayInputStream. (.getBytes x))))
+  (fn [terms] (some #{:name} (keys terms))))
 
 (defn boundary
   "Return the KML file for a UK Parliament constituency.
    Options:
   - :name (required) The name of the constituency"
-  [terms]
-  {:pre [(some #{:name} (keys terms))]}
-  (-> "getBoundary"
-   (build-uri (preprocess-terms terms))
-   slurp
-   (parse-xml)))
+  ([terms]
+   (boundary terms identity))
+  ([terms callback]
+   {:pre [(some #{:name} (keys terms))]}
+   (-> "getBoundary"
+    (build-uri (preprocess-terms terms))
+    slurp
+    (callback (parse-xml)))))
 
-(defn committee
+(def-twfy-call
+  "committee"
+  "getCommittee"
   "Return the members of a select committee.
    Options - at least one of the following must be supplied:
-  - :name (optional) Return the members of the committee matching this name or, if more than one
-    committee is found, the names of the committees
+  - :name (optional) Return the members of the committee matching this name or,
+    if more than one committee is found, the names of the committees
   - :date (optional) Return the members of the committee as at this date.
-  N.B. As at 16/11/2012, a date prior to that of the 2010 general election must be supplied in order
-  to yield any results"
-  [terms]
-  {:pre [(some #{:name :date} (keys terms))]}
-  (invoke-twfy "getCommittee" terms))
+  N.B. As at 16/11/2012, a date prior to that of the 2010 general election must
+  be supplied in order to yield any results"
+  (fn [terms] (some #{:name :date} (keys terms))))
 
-(defn debates
+(def-twfy-call
+  "debates"
+  "getDebates"
   "Returns debates.
-   Options - note that (as at 16/11/2012) only one of the optional items may be supplied:
-   - :type (required) One of :commons, :westminsterhall, :lords, :scotland or :northernireland
+   Options - note that (as at 16/11/2012) only one of the optional items may be
+   supplied:
+   - :type (required) One of :commons, :westminsterhall, :lords, :scotland or
+       :northernireland
    - :date (optional) Return debates for this date
    - :search (optional) Return debates containing this term
    - :person (optional) Return debates by person ID
    - :gid (optional) Return the speech or debate matching this GID
-   - :order (optional, in conjunction with search or person) :d for date ordering, :r for relevance ordering
-   - :page (optional, in conjunction with search or person) The page of results to return
-   - :num (optional, in conjunction with search or person) The number of results to return"
-  [terms]
-  {:pre [(and (some? (:type terms)) (= 1 (count (select-keys terms #{:date :search :person :gid}))))]}
-  (invoke-twfy "getDebates" terms))
+   - :order (optional, in conjunction with search or person) :d for date
+     ordering, :r for relevance ordering
+   - :page (optional, in conjunction with search or person) The page of results
+     to return
+   - :num (optional, in conjunction with search or person) The number of
+     results to return"
+  (fn [terms] (and (some? (:type terms)) (= 1 (count (select-keys terms #{:date :search :person :gid}))))))
 
-(defn wrans
+(def-twfy-call
+  "wrans"
+  "getWrans"
   "Returns written answers.
-   Options - note that (as at 16/11/2012) only one of the following may be supplied:
+   Options - note that (as at 16/11/2012) only one of the following may be
+   supplied:
    - :date (optional) Return written answers for this date
    - :search (optional) Return written answers containing this term
    - :person (optional) Return written answers by person ID
    - :gid (optional) Return the written answer matching this GID
-   - :order (optional, in conjunction with search or person) :d for date ordering, :r for relevance ordering
-   - :page (optional, in conjunction with search or person) The page of results to return
-   - :num (optional, in conjunction with search or person) The number of results to return"
-  [terms]
-  {:pre [(= 1 (count (select-keys terms #{:date :search :person :gid})))]}
-  (invoke-twfy "getWrans" terms))
+   - :order (optional, in conjunction with search or person) :d for date
+     ordering, :r for relevance ordering
+   - :page (optional, in conjunction with search or person) The page of results
+     to return
+   - :num (optional, in conjunction with search or person) The number of
+     results to return"
+  (fn [terms] (= 1 (count (select-keys terms #{:date :search :person :gid})))))
 
-(defn wms
+(def-twfy-call
+  "wms"
+  "getWMS"
   "Returns written ministerial statements.
-  Options - note that (as at 16/11/2012) only one of the following may be supplied:
+  Options - note that (as at 16/11/2012) only one of the following may be
+  supplied:
    - :date (optional) Return written ministerial statements for this date
-   - :search (optional) Return written ministerial statements containing this term
+   - :search (optional) Return written ministerial statements containing this
+     term
    - :person (optional) Return written ministerial statements by person ID
    - :gid (optional) Return the written ministerial statement matching this GID
-   - :order (optional, in conjunction with search or person) :d for date ordering, :r for relevance ordering
-   - :page (optional, in conjunction with search or person) The page of results to return
-   - :num (optional, in conjunction with search or person) The number of results to return"
-  [terms]
-  {:pre [(= 1 (count (select-keys terms #{:date :search :person :gid})))]}
-  (invoke-twfy "getWMS" terms))
+   - :order (optional, in conjunction with search or person) :d for date
+     ordering, :r for relevance ordering
+   - :page (optional, in conjunction with search or person) The page of results
+     to return
+   - :num (optional, in conjunction with search or person) The number of
+     results to return"
+  (fn [terms] (= 1 (count (select-keys terms #{:date :search :person :gid})))))
 
-(defn hansard
+(def-twfy-call
+  "hansard"
+  "getHansard"
   "Return all of Hansard.
-   Options - note that (as at 16/11/2012) only one of the following may be supplied:
+   Options - note that (as at 16/11/2012) only one of the following may be
+   supplied:
    - :search (optional) Return data containg this term
    - :person (optional) Return data by person ID
-   - :order (optional, in conjunction with search or person) :d for date ordering, :r for relevance ordering
-   - :page (optional, in conjunction with search or person) The page of results to return
-   - :num (optional, in conjunction with search or person) The number of results to return"
-  [terms]
-  {:pre [(= 1 (count (select-keys terms #{:search :person})))]}
-  (invoke-twfy "getHansard" terms))
+   - :order (optional, in conjunction with search or person) :d for date
+     ordering, :r for relevance ordering
+   - :page (optional, in conjunction with search or person) The page of results
+     to return
+   - :num (optional, in conjunction with search or person) The number of
+     results to return"
+  (fn [terms] (= 1 (count (select-keys terms #{:search :person})))))
 
-(defn comments
-  "Return comments left on TheyWorkForYou.  With no arguments, returns the most recent comments in
-   reverse date order.
+(def-twfy-call
+  "comments"
+  "getComments"
+  "Return comments left on TheyWorkForYou.  With no arguments, returns the most
+   recent comments in reverse date order.
    Options:
    - :pid (optional) Return comments made on a particular person ID (MP or Lord)
    - :start_date (optional) Return comments made on or after this date
    - :end_date (optional) Return comments made on or before this date
    - :search (optional) Return comments containing this term
-   The following options are as yet only implemented by the API in combination with :search
+   The following options are as yet only implemented by the API in combination
+   with :search
    - :page (optional) The page of results to return
    - :num (optional) The number of result to return"
-  [terms]
-  (invoke-twfy "getComments" terms))
+   (fn [terms] true))
