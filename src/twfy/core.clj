@@ -36,15 +36,15 @@
    map2query
    (str base-uri fname)))
 
-(defmulti to-joda "Convert dates to Joda time instances" class)
-(defmethod to-joda java.util.Date [d] (c/from-date d))
-(defmethod to-joda java.sql.Date [d] (c/from-sql-date d))
-(defmethod to-joda java.sql.Timestamp [d] (c/from-sql-time d))
-(defmethod to-joda Long [d] (c/from-long d))
-(defmethod to-joda String [d] (c/from-string d))
-(defmethod to-joda org.joda.time.ReadableInstant [d] d)
+(defmulti ^{:private true} to-joda "Convert dates to Joda time instances" class)
+(defmethod ^{:private true} to-joda java.util.Date [d] (c/from-date d))
+(defmethod ^{:private true} to-joda java.sql.Date [d] (c/from-sql-date d))
+(defmethod ^{:private true} to-joda java.sql.Timestamp [d] (c/from-sql-time d))
+(defmethod ^{:private true} to-joda Long [d] (c/from-long d))
+(defmethod ^{:private true} to-joda String [d] (c/from-string d))
+(defmethod ^{:private true} to-joda org.joda.time.ReadableInstant [d] d)
 
-(defn date2string
+(defn- date2string
  "Convert a date to a string of the form yyyy-MM-dd"
  [d]
  (f/unparse (f/formatters :date) (to-joda d)))
@@ -71,7 +71,7 @@
       (ch/parse-string true)
       callback)))
 
-(defmacro def-twfy-call
+(defmacro ^{:private true} def-twfy-call
   "Wraps the invocation of a twfy API method in a function that optionally accepts a
    callback. Arguments:
    - fname : The name of the function to be defined.

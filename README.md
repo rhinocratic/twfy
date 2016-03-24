@@ -20,7 +20,7 @@ Alternatively, add this to your Maven project's `pom.xml`:
 </dependency>
 ```
 
-In order to invoke any of the API methods, you'll need to obtain a TWFY [API key](http://www.theyworkforyou.com/api/key), which this library expects to pick up from an environment variable called TWFY_API_KEY.  For testing purposes, you can add a reference to [`lein-environ`](https://github.com/weavejester/environ) to the `:plugins` section of your `project.clj`, and put the key in `profiles.clj`:
+In order to invoke any of the API methods, you'll need to obtain a TWFY [API key](http://www.theyworkforyou.com/api/key), which this library expects to pick up from an environment variable called TWFY_API_KEY.  For testing purposes, you can add a reference to [`lein-environ`](https://github.com/weavejester/environ) to the `:plugins` section of your `project.clj`, and put the key in your `profiles.clj`:
 ```
 {:dev
   {:env
@@ -32,7 +32,7 @@ In order to invoke any of the API methods, you'll need to obtain a TWFY [API key
 
 ## Examples
 
-From a project REPL:
+From a project REPL (synchronous call):
 
 ```clojure
 => (require '[twfy.core :as twfy])
@@ -58,11 +58,15 @@ nil
   :full_name "Dennis Skinner",
   :image_height 59,
   :left_house "9999-12-31"}
+ {:given_name "Dennis",
+  :party "Labour",
 ...
-
-=> (def evil (twfy/hansard {:search "Investigatory Powers"}))
-#'user/evil
-=> (pp/pprint (first (:rows evil)))
+```
+Asynchronous call:
+```clojure
+=> (twfy/hansard
+     {:search "Investigatory Powers"}
+     (fn [result] (pp/pprint (first (:rows result)))))
 {:body "uk",
  :calendar_id "8399",
  :chamber "Commons: Main Chamber",
