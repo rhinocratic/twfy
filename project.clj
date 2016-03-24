@@ -1,4 +1,4 @@
-(defproject twfy "0.2.0-SNAPSHOT"
+(defproject twfy "0.3.0-SNAPSHOT"
   :description "Clojure bindings for the [TheyWorkForYou](http://www.theyworkforyou.com/) [API](http://www.theyworkforyou.com/api/)"
   :url "https://github.com/rhinocratic/twfy"
   :license {:name "Eclipse Public License"
