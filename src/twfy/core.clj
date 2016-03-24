@@ -274,7 +274,8 @@
    (-> "getBoundary"
     (build-uri (preprocess-terms terms))
     slurp
-    (callback (parse-xml)))))
+    parse-xml
+    callback)))
 
 (def-twfy-call
   "committee"
