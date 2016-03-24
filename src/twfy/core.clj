@@ -127,14 +127,17 @@
 (def-twfy-call
   "person"
   "getPerson"
-  "Get details for the person with a given id. Accepts a map containing :id
-  (a string)"
+  "Get details for the person with the given id.
+   Accepts a map of options and an optional callback.
+   Options:
+   - :id (required) The person ID for which to retrieve details"
   (fn [terms] (some #{:id} (keys terms))))
 
 (def-twfy-call
   "mp"
   "getMP"
   "Return details for a particular MP.
+   Accepts a map of options and an optional callback.
   Options - at least one of the following must be supplied:
   - :postcode (optional)
   - :constituency (optional) The name of a constituency.  Note that this will
@@ -149,7 +152,8 @@
 (def-twfy-call
   "mp-info"
   "getMPInfo"
-  "Returns additional information for a particular person
+  "Returns additional information for a particular person.
+   Accepts a map of options and an optional callback.
    Options:
   - :id (required) The person ID
   - :fields (optional) The fields required in the response, comma separated
@@ -160,6 +164,7 @@
   "mps-info"
   "getMPsInfo"
   "Return additional information for one or more people.
+   Accepts a map of options and an optional callback.
   Options:
   - :id (required) The person IDs, as a comma separated string
   - :fields (optional) The fields required in the response, comma separated
@@ -169,7 +174,8 @@
 (def-twfy-call
   "mps"
   "getMPs"
-  "Return a list of MPs
+  "Return a list of MPs.
+   Accepts a map of options and an optional callback.
    Options:
    - :date (optional) Return the list of MPs as at this date
    - :party (optional) Return the list of MPs from the given party
@@ -181,6 +187,7 @@
   "lord"
   "getLord"
   "Return a particular lord.
+   Accepts a map of options and an optional callback.
    Options:
    - :id (required) The person ID of the lord"
    (fn [terms] (some #{:id} (keys terms))))
@@ -189,6 +196,7 @@
   "lords"
   "getLords"
   "Return a list of lords.
+   Accepts a map of options and an optional callback.
    Options:
   - :date (optional) Return the list of lords as at this date (NB date is when
     the lord is introduced in Parliament)
@@ -203,6 +211,7 @@
   "mla"
   "getMLA"
   "Return a particular MLA.
+   Accepts a map of options and an optional callback.
    Options - at least one of the following must be supplied:
   - :postcode (optional) Return the MLA for the given postcode
   - :constituency (optional) The name of a constituency
@@ -213,6 +222,7 @@
   "mlas"
   "getMLAs"
   "Return a list of MLAs.
+   Accepts a map of options and an optional callback.
    Options:
   - :date (optional) Return the list of MLAs as at the given date
   - :party (optional) Return the list of MLAs from the given party
@@ -224,6 +234,7 @@
   "msp"
   "getMSP"
   "Return a particular MSP.
+   Accepts a map of options and an optional callback.
    Options - at least one of the following must be supplied:
   - :postcode (optional) Return the MSP for a particular postcode
   - :constituency (optional) The name of a constituency
@@ -234,6 +245,7 @@
   "msps"
   "getMSPs"
   "Return a list of MSPs.
+   Accepts a map of options and an optional callback.
    Options:
   - :date (optional) Return the list of MSPs as at the given date
   - :party (optional) Return the list of MSPs from the given party
@@ -245,12 +257,14 @@
   "geometry"
   "getGeometry"
   "Return geometry information for a constituency.
+   Accepts a map of options and an optional callback.
    Options:
   - :name (required) The name of the constituency"
   (fn [terms] (some #{:name} (keys terms))))
 
 (defn boundary
   "Return the KML file for a UK Parliament constituency.
+   Accepts a map of options and an optional callback.
    Options:
   - :name (required) The name of the constituency"
   ([terms]
@@ -266,6 +280,7 @@
   "committee"
   "getCommittee"
   "Return the members of a select committee.
+   Accepts a map of options and an optional callback.
    Options - at least one of the following must be supplied:
   - :name (optional) Return the members of the committee matching this name or,
     if more than one committee is found, the names of the committees
@@ -277,7 +292,8 @@
 (def-twfy-call
   "debates"
   "getDebates"
-  "Returns debates.
+  "Returns debates for the search terms provided.
+   Accepts a map of options and an optional callback.
    Options - note that (as at 16/11/2012) only one of the optional items may be
    supplied:
    - :type (required) One of :commons, :westminsterhall, :lords, :scotland or
@@ -297,7 +313,8 @@
 (def-twfy-call
   "wrans"
   "getWrans"
-  "Returns written answers.
+  "Returns written answers for the search terms provided.
+   Accepts a map of options and an optional callback.
    Options - note that (as at 16/11/2012) only one of the following may be
    supplied:
    - :date (optional) Return written answers for this date
@@ -315,7 +332,8 @@
 (def-twfy-call
   "wms"
   "getWMS"
-  "Returns written ministerial statements.
+  "Returns written ministerial statements for the search terms provided.
+   Accepts a map of options and an optional callback.
   Options - note that (as at 16/11/2012) only one of the following may be
   supplied:
    - :date (optional) Return written ministerial statements for this date
@@ -334,7 +352,8 @@
 (def-twfy-call
   "hansard"
   "getHansard"
-  "Return all of Hansard.
+  "Return all of Hansard for the search terms provided.
+   Accepts a map of options and an optional callback.
    Options - note that (as at 16/11/2012) only one of the following may be
    supplied:
    - :search (optional) Return data containg this term
@@ -352,6 +371,7 @@
   "getComments"
   "Return comments left on TheyWorkForYou.  With no arguments, returns the most
    recent comments in reverse date order.
+   Accepts a map of options and an optional callback.
    Options:
    - :pid (optional) Return comments made on a particular person ID (MP or Lord)
    - :start_date (optional) Return comments made on or after this date
