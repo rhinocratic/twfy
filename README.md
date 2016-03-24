@@ -29,6 +29,7 @@ In order to invoke any of the API methods, you'll need to obtain a TWFY [API key
   {:env
     {:twfy-api-key "your-api-key-here"}}}
 ```
+The API methods all accept a map of options and (optionally, for asynchronous calls) a callback function that will be invoked with the response.
 
 ## Examples
 
