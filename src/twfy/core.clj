@@ -60,6 +60,15 @@
                     :default [k v]))
                 args)))
 
+(defn- handle-error
+  "Throw an exception if there was an :error in the response map"
+  [response]
+  (let [error (:error response)]
+    (if error
+      (throw
+        (ex-info error {:response response}))
+      response)))
+
 (defn- invoke-twfy
   "Invokes the \"They Work For You\" API"
   [fname terms callback]
@@ -69,6 +78,7 @@
       (build-uri (preprocess-terms terms))
       slurp
       (ch/parse-string true)
+      handle-error
       callback)))
 
 (defmacro ^{:private true} def-twfy-call
@@ -262,6 +272,15 @@
   - :name (required) The name of the constituency"
   (fn [terms] (some #{:name} (keys terms))))
 
+(defn- handle-xml-error
+  "Handle an error from the boundary API call"
+  [response]
+  (let [error (last (re-find #"\"error\"\s*:\s*(.*)" response))]
+    (if error
+      (throw
+        (ex-info error {:response response}))
+      response)))
+
 (defn boundary
   "Return the KML file for a UK Parliament constituency.
    Accepts a map of options and an optional callback.
@@ -274,6 +293,7 @@
    (-> "getBoundary"
     (build-uri (preprocess-terms terms))
     slurp
+    handle-xml-error
     parse-xml
     callback)))
 

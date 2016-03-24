@@ -144,3 +144,7 @@
 (deftest test-async
   (is (< 0 (lords {:party "labour"} (fn [result] (count result)))))
   (is (< 0 (boundary {:name "Morecambe and Lunesdale"} (fn [result] (count result))))))
+
+(deftest test-error-handling
+  (is (thrown? Exception (person {:id 1054})))
+  (is (thrown? Exception (boundary {:name "Morecambe und Lunesdale"}))))
