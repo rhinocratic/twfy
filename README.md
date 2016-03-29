@@ -86,8 +86,6 @@ Asynchronous call:
 ...
 ```
 
-The API calls return Clojure-native data structures.
-
 ## License
 
 Copyright &copy; 2016 Andrew Baxter
