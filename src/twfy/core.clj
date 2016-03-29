@@ -13,9 +13,6 @@
   "The \"They Work For You\" API key"
   (env :twfy-api-key))
 
-(if (not api-key)
-  (println "No key found for the \"They Work For You\" API!"))
-
 (def ^{:private true} base-uri
   "The base URI of the \"They Work For You\" API. May be overridden by setting environment variable :twfy-base-api"
   (or (env :twfy-base-api) "http://theyworkforyou.com/api/"))
@@ -32,7 +29,8 @@
 (defn- build-uri
   "Build the URI for an API function from the function name and arguments"
   [fname args]
-  (->> (assoc args :key api-key)
+  (->> args
+   (merge {:key api-key})
    map2query
    (str base-uri fname)))
 
@@ -72,14 +70,12 @@
 (defn- invoke-twfy
   "Invokes the \"They Work For You\" API"
   [fname terms callback]
-  (if (not api-key)
-    "No key found for the \"They Work For You\" API!"
-    (-> fname
-      (build-uri (preprocess-terms terms))
-      slurp
-      (ch/parse-string true)
-      handle-error
-      callback)))
+  (-> fname
+    (build-uri (preprocess-terms terms))
+    slurp
+    (ch/parse-string true)
+    handle-error
+    callback))
 
 (defmacro ^{:private true} def-twfy-call
   "Wraps the invocation of a twfy API method in a function that optionally accepts a

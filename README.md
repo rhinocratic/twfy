@@ -19,8 +19,11 @@ Alternatively, add this to your Maven project's `pom.xml`:
   <version>0.3.0-SNAPSHOT</version>
 </dependency>
 ```
+The API methods all accept a map of parameters and (optionally, for asynchronous calls) a callback function that will be invoked with the response.
 
-In order to invoke any of the API methods, you'll need to obtain a TWFY [API key](http://www.theyworkforyou.com/api/key), which this library expects to pick up from an environment variable called TWFY_API_KEY.  For testing purposes, you can add a reference to [`lein-environ`](https://github.com/weavejester/environ) to the `:plugins` section of your `project.clj`, and put the key in your `profiles.clj`:
+In order to invoke any of the API methods, you'll need to obtain a TWFY [API key](http://www.theyworkforyou.com/api/key), which may be supplied to the API methods via a :key entry in the parameters map.
+
+Alternatively, the library can pick up the API key from an environment variable called TWFY_API_KEY, removing the need to supply it with each method invocation.  For testing purposes, you can add a reference to [`lein-environ`](https://github.com/weavejester/environ) to the `:plugins` section of your `project.clj`, and put the key in your `profiles.clj`:
 ```
 {:dev
   {:env
@@ -29,7 +32,6 @@ In order to invoke any of the API methods, you'll need to obtain a TWFY [API key
   {:env
     {:twfy-api-key "your-api-key-here"}}}
 ```
-The API methods all accept a map of options and (optionally, for asynchronous calls) a callback function that will be invoked with the response.
 
 ## Examples
 
@@ -40,7 +42,7 @@ From a project REPL (synchronous call):
 nil
 => (require '[clojure.pprint :as pp])
 nil
-=> (pp/pprint (twfy/person {:id 10544}))
+=> (pp/pprint (twfy/person {:id 10544 :key "your-api-key-here"}))
 ({:given_name "Dennis",
   :party "Labour",
   :left_reason "still_in_office",
@@ -66,7 +68,7 @@ nil
 Asynchronous call:
 ```clojure
 => (twfy/hansard
-     {:search "Investigatory Powers"}
+     {:search "Investigatory Powers" :key "your-api-key-here"}
      (fn [result] (pp/pprint (first (:rows result)))))
 {:body "uk",
  :calendar_id "8399",
