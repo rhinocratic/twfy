@@ -15,7 +15,7 @@
 
 (def ^{:private true} base-uri
   "The base URI of the \"They Work For You\" API. May be overridden by setting environment variable :twfy-base-api"
-  (or (env :twfy-base-api) "http://theyworkforyou.com/api/"))
+  (or (env :twfy-base-api) "https://theyworkforyou.com/api/"))
 
 (defn- map2query
   "Translates a map into a query string."
