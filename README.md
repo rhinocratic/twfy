@@ -88,6 +88,6 @@ Asynchronous call:
 
 ## License
 
-Copyright &copy; 2016 Andrew Baxter
+Copyright &copy; 2017 Andrew Baxter
 
 Distributed under the Eclipse Public License, the same as Clojure.
