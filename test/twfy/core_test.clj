@@ -20,7 +20,7 @@
 (deftest test-convert-url
   (let [res (convert-url {:url "http://www.publications.parliament.uk/pa/cm201314/cmhansrd/cm131106/debtext/131106-0001.htm#131106-0001.htm_spnew47"})]
     (is (.startsWith (:gid res) "uk.org.publicwhip/debate"))
-    (is (.startsWith (:url res) "http://www.theyworkforyou.com"))
+    (is (.startsWith (:url res) "https://www.theyworkforyou.com"))
     (is (thrown? AssertionError (convert-url {})))))
 
 (deftest test-constituency
@@ -63,7 +63,7 @@
   (is (thrown? AssertionError (lord {}))))
 
 (deftest test-lords
-  (is (= 868 (count (lords {:date "2016-01-01"}))))
+  (is (= 858 (count (lords {:date "2016-01-01"}))))
   (is (< 0 (count (lords {:party "labour"}))))
   (is (< 0 (count (lords {:search "Andrews"}))))
   (is (thrown? AssertionError (lords {}))))
@@ -93,11 +93,11 @@
   (is (thrown? AssertionError (msps {}))))
 
 (deftest test-geometry
-  (is (= 370195.4 (:max_e (geometry {:name "Morecambe and Lunesdale"}))))
+  (is (= 370195.398594 (:max_e (geometry {:name "Morecambe and Lunesdale"}))))
   (is (thrown? AssertionError (geometry {}))))
 
 (deftest test-boundary
-  (is (< 0 (count (boundary {:name "Morecambe and Lunesdale"}))))
+  (is (< 0 (count (boundary {:name "Islington North"}))))
   (is (thrown? AssertionError (boundary {}))))
 
 (deftest test-committee
@@ -105,7 +105,7 @@
   (is (thrown? AssertionError (committee {}))))
 
 (deftest test-debates
-  (is (= "11:30:00" (get-in (first (debates {:type :commons :date "2016-03-01"})) [:entry :htime])))
+  (is (= "00:00:00" (get-in (first (debates {:type :commons :date "2016-03-01"})) [:entry :htime])))
   (is (< 0 (get-in (debates {:type :lords :search "fish"}) [:info :total_results])))
   (is (< 0 (get-in (debates {:type :commons :person 10133}) [:info :total_results])))
   (is (= "101" (:major (second (debates {:type :lords :gid "2006-07-14a.946.0"})))))

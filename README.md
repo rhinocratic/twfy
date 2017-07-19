@@ -7,7 +7,7 @@ Clojure bindings for the [TheyWorkForYou](http://www.theyworkforyou.com) [API](h
 To use twfy with Leiningen, add the following to the `:dependencies` section of your `project.clj`:
 
 ```clojure
-[twfy "0.3.1-SNAPSHOT"]
+[twfy "0.3.2"]
 ```
 
 Alternatively, add this to your Maven project's `pom.xml`:
@@ -16,7 +16,7 @@ Alternatively, add this to your Maven project's `pom.xml`:
 <dependency>
   <groupId>twfy</groupId>
   <artifactId>twfy</artifactId>
-  <version>0.3.0-SNAPSHOT</version>
+  <version>0.3.2</version>
 </dependency>
 ```
 The API methods all accept a map of parameters and (optionally, for asynchronous calls) a callback function that will be invoked with the response.

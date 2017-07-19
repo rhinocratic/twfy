@@ -6,7 +6,8 @@
             [clojure.xml :as xml]
             [environ.core :refer [env]]
             [clj-time.coerce :as c]
-            [clj-time.format :as f]))
+            [clj-time.format :as f]
+            [clj-http.client :as client]))
 
 
 (def ^{:private true} api-key
@@ -72,7 +73,8 @@
   [fname terms callback]
   (-> fname
     (build-uri (preprocess-terms terms))
-    slurp
+    (client/get {:accept :json})
+    :body
     (ch/parse-string true)
     handle-error
     callback))
@@ -288,7 +290,8 @@
    {:pre [(some #{:name} (keys terms))]}
    (-> "getBoundary"
     (build-uri (preprocess-terms terms))
-    slurp
+    (client/get {:follow-redirects :true})
+    :body
     handle-xml-error
     parse-xml
     callback)))
